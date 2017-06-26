@@ -2,6 +2,7 @@ import Tkinter
 import Queue
 import math
 from PIL import Image, ImageDraw, ImageTk
+import transformation
 
 CANVASWIDTH = 512
 CANVASHEIGHT = 512
@@ -72,11 +73,19 @@ def _drawcircle(clickstack, canvas, img):
     radius = int(radius)
     vx1 = (center[0] + radius, center[1] + radius)
     vx2 = (center[0] - radius, center[1] - radius)
-    print vx1, vx2
     image_draw = ImageDraw.Draw(img)
     image_draw.ellipse([vx2, vx1], outline='black')
     canvas._image_tk = ImageTk.PhotoImage(img)
     canvas.itemconfigure(canvas._image_id, image=canvas._image_tk)
+
+
+def _clear(img, canvas):
+    transformation.clear(img, canvas)
+
+
+def _move(img, canvas):
+    transformation.move(img, canvas, 20, 0)
+
 
 def main():
     root = Tkinter.Tk()
@@ -84,6 +93,10 @@ def main():
 
     canvas = Tkinter.Canvas(width=CANVASWIDTH, height=CANVASHEIGHT)
     eventmng.canvas = canvas
+    image = Image.new('1', (CANVASWIDTH, CANVASHEIGHT), '#ffffff')
+    eventmng.img = image
+    clearbutton = Tkinter.Button(root, text="limpar",
+                                 command=lambda: _clear(image, canvas))
     linebutton = Tkinter.Button(root, text="linha",
                                 command=lambda: eventmng.set_waitingf(
                                     2, _drawline))
@@ -98,18 +111,18 @@ def main():
                                       2, _drawcircle))
     # rotatebutton = Tkinter.Button(root, text="rotacao", command=drawline)
     # scalebutton = Tkinter.Button(root, text="espelhar", command=drawline)
-    # movebutton = Tkinter.Button(root, text="translacao", command=drawline)
+    movebutton = Tkinter.Button(root, text="translacao",
+                                command=lambda: _move(image, canvas))
     canvas.pack()
+    clearbutton.pack()
     linebutton.pack()
     rectbutton.pack()
     trianbutton.pack()
     circlebutton.pack()
     # rotatebutton.pack()
     # scalebutton.pack()
-    # movebutton.pack()
+    movebutton.pack()
 
-    image = Image.new('1', (CANVASWIDTH, CANVASHEIGHT), '#cdcdcd')
-    eventmng.img = image
     canvas._image_tk = ImageTk.PhotoImage(image)
     canvas._image_id = canvas.create_image(0, 0, image=canvas._image_tk, anchor='nw')
     canvas.tag_bind(canvas._image_id, "<Button-1>", lambda e: get_pt(e, eventmng))
