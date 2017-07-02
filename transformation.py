@@ -44,6 +44,12 @@ def scale(pilimage, canvas, scx, scy):
                     orgx = i
         return (orgx, pilimage.size[1] - orgy)
 
+    def trypaint(ptx, pty):
+        try:
+            pixels[ptx, pilimage.size[1] - pty] = 0
+        except IndexError:
+            pass
+
     matrix = piltomatrix(pilimage)
     fsp = findoriginpx()
     transformation = np.matrix([[scx, 0, fsp[0] - fsp[0] * scx],
@@ -56,10 +62,10 @@ def scale(pilimage, canvas, scx, scy):
     for column in xrange(results.shape[1]):
         ptx = int(results[0, column])
         pty = int(results[1, column])
-        try:
-            pixels[ptx, pilimage.size[1] - pty] = 0
-        except IndexError:
-            pass
+        trypaint(ptx, pty)
+        for adjx in xrange(int(math.floor(scx)) + 1):
+            for adjy in xrange(int(math.floor(scy)) + 1):
+                trypaint(ptx - adjx, pty - adjy)
 
     canvas._image_tk = ImageTk.PhotoImage(pilimage)
     canvas.itemconfigure(canvas._image_id, image=canvas._image_tk)
